@@ -57,7 +57,7 @@
 	       position: fixed;top:0px;z-index: 10;
 	        }
 	
-	p{position: absolute;top:550px;left: 25px;z-index: 9;position: fixed;color: #888;}	
+	p{position: absolute;top:550px;left: 25px;z-index: 9;position: fixed;color: #888;}
 
 .container{/*margin:0px auto;
 		        width:1000px;*/
@@ -154,116 +154,70 @@ tr:hover{background-color: #444;color: #fff;}
                     }
                 }
             </script>
-		<div id="uploadArea">
-			<img src="uploadicon_small.png">
-
+		<div id="uploadArea" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <img src="uploadicon_small.png" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <form id="drop-upload" action="/upload/file" method="POST">
+                <input id="filediag3" type="file" name="files3[]" style="display: none;" miltiple/>
+                <button type="submit" id="btn2-file-upload" style="display: none;">Upload</button>
+            </form>
 		</div>	
-			<p>Drag Images here to upload.</p>
+			<p ondrop="drop(event)" ondragover="allowDrop(event)">Drag Images here to upload.</p>
+            <script>
+                var form2 = document.getElementById('drop-upload');
+                var files2;
+
+                form2.onsubmit = function(event) {
+                    //event.preventDefault();
+                    alert("me too!");
+
+                    // Create a new FormData object.
+                    var formData = new FormData();
+
+                    // Loop through each of the selected files.
+                    for (var i = 0; i < files2.length; i++) {
+                        var f = files2[i];
+
+                        // Check the file type.
+                        if (!f.type && f.size%4096 == 0) {
+                            continue;
+                        }
+                        alert(f.name)
+
+                        // Add the file to the request.
+                        formData.append('files3[]', f, f.name);
+
+                    }
+
+                    // Set up the request.
+                    var xhr = new XMLHttpRequest();
+
+                    // Open the connection.
+                    xhr.open('POST', '/upload/file', true);
+
+                    // Send the Data.
+                    xhr.send(formData);
+                }
+
+                function allowDrop(ev) {
+                    ev.preventDefault();
+                    return false
+                }
+
+                function drop(ev) {
+                    ev.preventDefault();
+                    alert("drop!!!");
+
+                    // Get the selected files from the input.
+                    files2 = ev.dataTransfer.files;
+
+                    if (form2.onsubmit) {
+                        form2.onsubmit()
+                    }
+
+                    return false
+                }
+            </script>
 		<div id="section">
-			 <table style="width:75%">
-				<tr>
-					<th>Name</th>
-					<th>Created</th>		
-					<th>Modified</th>
-					<th>File Type</th>		
-					<th>Size</th>
-				</tr>
-				<tr>
-					<td><img src="googldrive.png"> Jill</td>
-					<td>3/7/2016</td>
-					<td>9/7/2016</td>
-					<td>jpg</td>		
-					<td>150mb</td>
-				</tr>
-				<tr>
-					<td><img src="dropbox.png"> Eve</td>
-					<td>14/9/2016</td>
-					<td>19/6/2016</td>
-					<td>png</td>		
-					<td>94kb</td>
-				</tr>
-				<tr>
-					<td><img src="googldrive.png"> John</td>
-					<td>23/8/2016</td>
-					<td>8/7/2016</td>
-					<td>gif</td>		
-					<td>80mb</td>
-					</tr>
-			
-			<!-- ==================================================== -->
-			
-			<tr>
-					<td><img src="googldrive.png"> Jill</td>
-					<td>3/7/2016</td>
-					<td>9/7/2016</td>
-					<td>jpg</td>		
-					<td>150mb</td>
-				</tr>
-				<tr>
-					<td><img src="dropbox.png"> Eve</td>
-					<td>14/9/2016</td>
-					<td>19/6/2016</td>
-					<td>png</td>		
-					<td>94kb</td>
-				</tr>
-				<tr>
-					<td><img src="googldrive.png"> John</td>
-					<td>23/8/2016</td>
-					<td>8/7/2016</td>
-					<td>gif</td>		
-					<td>80mb</td>
-					</tr>
-			
-			<tr>
-					<td><img src="googldrive.png"> Jill</td>
-					<td>3/7/2016</td>
-					<td>9/7/2016</td>
-					<td>jpg</td>		
-					<td>150mb</td>
-				</tr>
-				<tr>
-					<td><img src="dropbox.png"> Eve</td>
-					<td>14/9/2016</td>
-					<td>19/6/2016</td>
-					<td>png</td>		
-					<td>94kb</td>
-				</tr>
-				<tr>
-					<td><img src="googldrive.png"> John</td>
-					<td>23/8/2016</td>
-					<td>8/7/2016</td>
-					<td>gif</td>		
-					<td>80mb</td>
-					</tr>
-			
-			<tr>
-					<td><img src="googldrive.png"> Jill</td>
-					<td>3/7/2016</td>
-					<td>9/7/2016</td>
-					<td>jpg</td>		
-					<td>150mb</td>
-				</tr>
-				<tr>
-					<td><img src="dropbox.png"> Eve</td>
-					<td>14/9/2016</td>
-					<td>19/6/2016</td>
-					<td>png</td>		
-					<td>94kb</td>
-				</tr>
-				<tr>
-					<td><img src="googldrive.png"> John</td>
-					<td>23/8/2016</td>
-					<td>8/7/2016</td>
-					<td>gif</td>		
-					<td>80mb</td>
-					</tr>
-			
-			
-			
-			
-			
-					
-			</table>
 </div>
 </div>
 

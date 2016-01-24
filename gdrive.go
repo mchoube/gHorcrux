@@ -24,6 +24,8 @@ type GDrive struct {
 	config       *oauth2.Config
 	ctx          context.Context
 	client       *http.Client
+	w            http.ResponseWriter
+	r            *http.Request
 }
 
 func NewGDrive() *GDrive {
@@ -74,12 +76,23 @@ func (gd *GDrive) tokenFromFile(file string) (*oauth2.Token, error) {
 }
 
 func (gd *GDrive) Link(w http.ResponseWriter, r *http.Request) {
+	refreshToken := false
+
 	tok, err := gd.tokenFromFile(gd.cacheFile)
 	if err != nil {
+		refreshToken = true
+	}
+
+	logInfo.Println("token: ", tok)
+
+	if !tok.Valid() {
+		logInfo.Println("token is expired.")
+		refreshToken = true
+	}
+
+	if refreshToken {
 		authURL := gd.config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 		http.Redirect(w, r, authURL, http.StatusFound)
-	} else {
-		logInfo.Println("token: ", tok)
 	}
 }
 
@@ -89,6 +102,17 @@ func (gd *GDrive) HasToken() bool {
 		return false
 	}
 	logInfo.Println("token: ", tok)
+
+	if !tok.Valid() {
+		logInfo.Println("token is expired.")
+		return false
+	}
+
+	if gd.client == nil {
+		gd.ctx = context.Background()
+		gd.client = gd.config.Client(gd.ctx, tok)
+	}
+
 	return true
 }
 
@@ -138,27 +162,43 @@ func (gd *GDrive) Unlink() {
 func (gd *GDrive) RefreshToken() {
 }
 
-func (gd *GDrive) List() {
+func (gd *GDrive) List() []FileList {
 	srv, err := drive.New(gd.client)
 	if err != nil {
 		logError.Printf("Unable to retrieve drive Client %v", err)
-		return
+		return nil
 	}
 
 	r, err := srv.Files.List().Do()
 	if err != nil {
 		logError.Printf("Unable to retrieve files. err: %v", err)
-		return
+		return nil
 	}
 
-	logInfo.Println("Files:")
-	if len(r.Files) > 0 {
-		for _, i := range r.Files {
-			logInfo.Printf("%s (%s)\n", i.Name, i.Id)
-		}
-	} else {
+	if len(r.Files) <= 0 {
 		logInfo.Print("No files found.")
+		return nil
 	}
+
+	files := make([]FileList, len(r.Files))
+
+	logInfo.Println("Files:")
+	for i, f := range r.Files {
+		logInfo.Printf("%v", f)
+		logInfo.Printf("%s (%s)\n", f.Name, f.Id)
+		fl := FileList{
+			Icon:         "",
+			Name:         f.Name,
+			Extension:    f.FileExtension,
+			CreatedTime:  f.CreatedTime,
+			ModifiedTime: f.ModifiedTime,
+		}
+		files[i] = fl
+	}
+
+	logInfo.Printf("%v", files)
+
+	return files
 }
 
 func (gd *GDrive) UploadFile(fname string, r io.Reader) error {

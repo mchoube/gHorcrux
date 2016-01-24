@@ -180,6 +180,7 @@ func linkHandler(w http.ResponseWriter, r *http.Request) {
 			logInfo.Printf("k: %s, v: %v", k, v)
 			v.Link(w, r)
 		}
+		render(w, "templates/home.html", nil)
 	} else {
 		logError.Println("invalid request: ", r.Method)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
