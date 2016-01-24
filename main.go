@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"text/template"
@@ -42,10 +43,15 @@ func main() {
 	boxes = make(map[string]horcrux, 3)
 
 	cfg = loadClientConfig()
+	if cfg.UsingGdrive {
+		gd := NewGDrive()
+		boxes["gdrive"] = gd
+	}
 
 	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/link", linkHandler)
 	http.HandleFunc("/redirect", redirectHandler)
+	http.HandleFunc("/upload/", updHandler)
 	http.ListenAndServe(":9999", nil)
 }
 
@@ -56,11 +62,24 @@ func initLogging(w io.Writer) {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		msg := &Message{}
+		linkPage := false
+
 		if !cfg.UsingGdrive && !cfg.UsingDropbox && !cfg.UsingFlickr {
-			msg := &Message{}
+			linkPage = true
+		} else {
+			for k, v := range boxes {
+				logInfo.Printf("k: %s, v: %v", k, v)
+				if !v.HasToken() {
+					linkPage = true
+				}
+			}
+		}
+
+		if linkPage {
 			renderLinkPage(w, "templates/link.html", msg)
 		} else {
-			http.Redirect(w, r, "http://localhost:9999/redirect", http.StatusFound)
+			render(w, "templates/home.html", nil)
 		}
 	} else {
 		logError.Println("invalid request: ", r.Method)
@@ -151,7 +170,7 @@ func linkHandler(w http.ResponseWriter, r *http.Request) {
 		logInfo.Println(r.Form.Get("dbox"))
 		logInfo.Println(r.Form.Get("flickr"))
 
-		if r.Form.Get("gdrive") != "" {
+		if r.Form.Get("gdrive") != "" && !cfg.UsingGdrive {
 			gd := NewGDrive()
 			boxes["gdrive"] = gd
 			cfg.SetUsingGdrive()
@@ -186,7 +205,51 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 		gd := boxes["gdrive"]
 		gd.SaveToken(r)
 		gd.List()
-		render(w, "templates/thanks.html", nil)
+		render(w, "templates/home.html", nil)
+	} else {
+		logError.Println("invalid request: ", r.Method)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	}
+}
+
+func updHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		logInfo.Println(r.URL.Path)
+		if r.URL.Path != "/upload/file" {
+			return
+		}
+
+		const _24K = (1 << 20) * 24
+		if err := r.ParseMultipartForm(_24K); nil != err {
+			logError.Printf("error while receiving file upload. err: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		gd := boxes["gdrive"]
+
+		for _, fheaders := range r.MultipartForm.File {
+			for _, hdr := range fheaders {
+				// open uploaded
+				var err error
+				var infile multipart.File
+				if infile, err = hdr.Open(); nil != err {
+					logError.Printf("error while hdr.Open(). err: %v", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				logInfo.Println(hdr.Filename)
+				logInfo.Printf("%v", infile)
+
+				err = gd.UploadFile(hdr.Filename, infile)
+				if err != nil {
+					logError.Printf("err: %v", err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
 	} else {
 		logError.Println("invalid request: ", r.Method)
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

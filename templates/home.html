@@ -1,0 +1,273 @@
+<!Doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+	<link href="gohackthon.css" rel="stylesheet">
+	<link href='https://fonts.googleapis.com/css?family=Roboto|Text+Me+One' rel='stylesheet' type='text/css'>
+	<title>Go Hackathon
+	</title>
+
+	<style>
+	body{margin: 0px;font-family: 'Roboto',sans-serif;
+		        font-size: 0.9em;}
+	h1{font-family: 'Text Me One', sans-serif;font-size: 2.9em;margin: 10px;}
+
+	#nav{line-height: 30px;
+		background-color: #444;
+		color: #fff;
+		
+		height:250px;
+		width:200px;
+		float:left;
+		padding:15px;
+		position:fixed;
+		top:130px;
+        font-family: 'Roboto',sans-serif;
+		font-size: 1em;
+	}
+
+    button{background-color: transparent;border: 0px;color: #fff;padding: 15px;}
+	#nav button:hover{background-color:#64a7f3;}
+
+	#section {
+		width:75%;
+		float:right;
+		padding:10px; 
+		 position: absolute;
+		 top:130px;
+		 left:300px;
+		 z-index: 0;
+		 }
+
+	#uploadArea{position:absolute;
+				top:435px;
+				left: 10px;
+				position:fixed;
+				border:1px solid #444;
+				padding: 95px;
+			}
+
+	header{background-color: #64a7f3;
+		    width: 100%;
+		   color: #fff;
+		   padding:20px; 
+	       position: fixed;top:0px;z-index: 10;
+	        }
+	
+	p{position: absolute;top:550px;left: 25px;z-index: 9;position: fixed;color: #888;}	
+
+.container{/*margin:0px auto;
+		        width:1000px;*/
+		        /* font-family: 'Roboto',sans-serif;
+		        font-size: 1.3em; */
+		       }
+tr:hover{background-color: #444;color: #fff;}          
+		table, th, td {
+			/* border: 1px solid black;*/
+			border-collapse: collapse;
+			margin:15px ;
+
+		}
+		th, td {
+			padding:10px 15px;
+		}
+		th {
+			text-align: left;
+		}
+		</style>
+
+	</head>
+<body>
+	<header><h1>Horcrux</h1></header>
+	<div class="container">
+		
+			<hr>
+		<div id="nav">
+            <button><img src="myaccounticon.png">My Account</button><hr>
+            <button><img src="newfolder.png">New Folder</button><br>
+            <button id="id" onclick="fu()"><img src="fileupload.png">File Upload</button><br>
+            <button><img src="folder-uplodmini.png">Folder Upload</button>
+            <input id="filediag" type="file" name="files" style="display: none;"/>
+            <form id="file-upload" action="/upload/file" method="POST">
+                <input id="filediag2" type="file" name="files[]" style="display: none;" miltiple/>
+                <button type="submit" id="btn-file-upload" style="display: none;">Upload</button>
+            </form>
+		</div>
+            <script>
+                var form = document.getElementById('file-upload');
+                var fileSelect = document.getElementById('filediag');
+                var f2 = document.getElementById('filediag2');
+                var files;
+
+                fileSelect.onchange = function(event) {
+                    alert("here!");
+
+                    // Get the selected files from the input.
+                    files = fileSelect.files;
+
+                    if (form.onsubmit) {
+                        form.onsubmit()
+                    }
+                }
+
+                form.onsubmit = function(event) {
+                    //event.preventDefault();
+                    alert("me too!");
+
+                    // Create a new FormData object.
+                    var formData = new FormData();
+
+                    // Loop through each of the selected files.
+                    for (var i = 0; i < files.length; i++) {
+                        var f = files[i];
+
+                        // Check the file type.
+                        if (!f.type && f.size%4096 == 0) {
+                            continue;
+                        }
+                        alert(f.name)
+
+                        // Add the file to the request.
+                        formData.append('files[]', f, f.name);
+
+                    }
+
+                    // Set up the request.
+                    var xhr = new XMLHttpRequest();
+
+                    // Open the connection.
+                    xhr.open('POST', '/upload/file', true);
+
+                    // Send the Data.
+                    xhr.send(formData);
+                }
+
+                function fu() {
+                    el = document.getElementById('filediag');
+                    if (el.onclick) {
+                        el.onclick();
+                    } else if (el.click) {
+                        el.click();
+                    }
+                }
+            </script>
+		<div id="uploadArea">
+			<img src="uploadicon_small.png">
+
+		</div>	
+			<p>Drag Images here to upload.</p>
+		<div id="section">
+			 <table style="width:75%">
+				<tr>
+					<th>Name</th>
+					<th>Created</th>		
+					<th>Modified</th>
+					<th>File Type</th>		
+					<th>Size</th>
+				</tr>
+				<tr>
+					<td><img src="googldrive.png"> Jill</td>
+					<td>3/7/2016</td>
+					<td>9/7/2016</td>
+					<td>jpg</td>		
+					<td>150mb</td>
+				</tr>
+				<tr>
+					<td><img src="dropbox.png"> Eve</td>
+					<td>14/9/2016</td>
+					<td>19/6/2016</td>
+					<td>png</td>		
+					<td>94kb</td>
+				</tr>
+				<tr>
+					<td><img src="googldrive.png"> John</td>
+					<td>23/8/2016</td>
+					<td>8/7/2016</td>
+					<td>gif</td>		
+					<td>80mb</td>
+					</tr>
+			
+			<!-- ==================================================== -->
+			
+			<tr>
+					<td><img src="googldrive.png"> Jill</td>
+					<td>3/7/2016</td>
+					<td>9/7/2016</td>
+					<td>jpg</td>		
+					<td>150mb</td>
+				</tr>
+				<tr>
+					<td><img src="dropbox.png"> Eve</td>
+					<td>14/9/2016</td>
+					<td>19/6/2016</td>
+					<td>png</td>		
+					<td>94kb</td>
+				</tr>
+				<tr>
+					<td><img src="googldrive.png"> John</td>
+					<td>23/8/2016</td>
+					<td>8/7/2016</td>
+					<td>gif</td>		
+					<td>80mb</td>
+					</tr>
+			
+			<tr>
+					<td><img src="googldrive.png"> Jill</td>
+					<td>3/7/2016</td>
+					<td>9/7/2016</td>
+					<td>jpg</td>		
+					<td>150mb</td>
+				</tr>
+				<tr>
+					<td><img src="dropbox.png"> Eve</td>
+					<td>14/9/2016</td>
+					<td>19/6/2016</td>
+					<td>png</td>		
+					<td>94kb</td>
+				</tr>
+				<tr>
+					<td><img src="googldrive.png"> John</td>
+					<td>23/8/2016</td>
+					<td>8/7/2016</td>
+					<td>gif</td>		
+					<td>80mb</td>
+					</tr>
+			
+			<tr>
+					<td><img src="googldrive.png"> Jill</td>
+					<td>3/7/2016</td>
+					<td>9/7/2016</td>
+					<td>jpg</td>		
+					<td>150mb</td>
+				</tr>
+				<tr>
+					<td><img src="dropbox.png"> Eve</td>
+					<td>14/9/2016</td>
+					<td>19/6/2016</td>
+					<td>png</td>		
+					<td>94kb</td>
+				</tr>
+				<tr>
+					<td><img src="googldrive.png"> John</td>
+					<td>23/8/2016</td>
+					<td>8/7/2016</td>
+					<td>gif</td>		
+					<td>80mb</td>
+					</tr>
+			
+			
+			
+			
+			
+					
+			</table>
+</div>
+</div>
+
+
+		</body>
+
+		</html>

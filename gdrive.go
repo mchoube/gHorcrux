@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -14,6 +15,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
+	"google.golang.org/api/googleapi"
 )
 
 type GDrive struct {
@@ -58,7 +60,7 @@ func NewGDrive() *GDrive {
 
 // tokenFromFile retrieves a Token from a given file path.
 // It returns the retrieved Token and any read error encountered.
-func tokenFromFile(file string) (*oauth2.Token, error) {
+func (gd *GDrive) tokenFromFile(file string) (*oauth2.Token, error) {
 	logInfo.Println("token file: ", file)
 	f, err := os.Open(file)
 	if err != nil {
@@ -72,7 +74,7 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 }
 
 func (gd *GDrive) Link(w http.ResponseWriter, r *http.Request) {
-	tok, err := tokenFromFile(gd.cacheFile)
+	tok, err := gd.tokenFromFile(gd.cacheFile)
 	if err != nil {
 		authURL := gd.config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 		http.Redirect(w, r, authURL, http.StatusFound)
@@ -81,9 +83,18 @@ func (gd *GDrive) Link(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (gd *GDrive) HasToken() bool {
+	tok, err := gd.tokenFromFile(gd.cacheFile)
+	if err != nil {
+		return false
+	}
+	logInfo.Println("token: ", tok)
+	return true
+}
+
 // saveToken uses a file path to create a file and store the
 // token in it.
-func saveToken(file string, token *oauth2.Token) error {
+func (gd *GDrive) saveToken(file string, token *oauth2.Token) error {
 	logInfo.Printf("Saving credential file to: %s\n", file)
 	f, err := os.Create(file)
 	if err != nil {
@@ -92,6 +103,8 @@ func saveToken(file string, token *oauth2.Token) error {
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+	gd.ctx = context.Background()
+	gd.client = gd.config.Client(gd.ctx, token)
 	return nil
 }
 
@@ -114,10 +127,7 @@ func (gd *GDrive) SaveToken(r *http.Request) error {
 		return err
 	}
 
-	saveToken(gd.cacheFile, tok)
-
-	gd.ctx = context.Background()
-	gd.client = gd.config.Client(gd.ctx, tok)
+	gd.saveToken(gd.cacheFile, tok)
 
 	return nil
 }
@@ -137,7 +147,7 @@ func (gd *GDrive) List() {
 
 	r, err := srv.Files.List().Do()
 	if err != nil {
-		logError.Printf("Unable to retrieve files.", err)
+		logError.Printf("Unable to retrieve files. err: %v", err)
 		return
 	}
 
@@ -151,7 +161,27 @@ func (gd *GDrive) List() {
 	}
 }
 
-func (gd *GDrive) UploadFile() {
+func (gd *GDrive) UploadFile(fname string, r io.Reader) error {
+	srv, err := drive.New(gd.client)
+	if err != nil {
+		logError.Printf("Unable to retrieve drive Client %v", err)
+		return err
+	}
+
+	mo := googleapi.ChunkSize(googleapi.DefaultUploadChunkSize)
+
+	fc := srv.Files.Create(&drive.File{Name: fname})
+	fc = fc.Media(r, mo)
+
+	logInfo.Printf("%v", fc)
+	f, err := fc.Do()
+	if err != nil {
+		logError.Printf("Unable to upload file: %v.", err)
+		return err
+	}
+	logInfo.Printf("%s (%s)\n", f.Name, f.Id)
+
+	return nil
 }
 
 func (gd *GDrive) UploadFiles() {
