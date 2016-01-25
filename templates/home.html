@@ -14,6 +14,7 @@
 	body{margin: 0px;font-family: 'Roboto',sans-serif;
 		        font-size: 0.9em;}
 	h1{font-family: 'Text Me One', sans-serif;font-size: 2.9em;margin: 10px;}
+    footer{position: absolute;top: 750px;color: #ccc;font-size: 0.9em;}
 
 	#nav{line-height: 30px;
 		background-color: #444;
@@ -86,10 +87,10 @@ tr:hover{background-color: #444;color: #fff;}
 		
 			<hr>
 		<div id="nav">
-            <button><img src="myaccounticon.png">My Account</button><hr>
-            <button><img src="newfolder.png">New Folder</button><br>
-            <button id="id" onclick="fu()"><img src="fileupload.png">File Upload</button><br>
-            <button><img src="folder-uplodmini.png">Folder Upload</button>
+            <button>My Account</button><hr>
+            <button>New Folder</button><br>
+            <button id="id" onclick="fu()">File Upload</button><br>
+            <button>Folder Upload</button>
             <input id="filediag" type="file" name="files" style="display: none;"/>
             <form id="file-upload" action="/upload/file" method="POST">
                 <input id="filediag2" type="file" name="files[]" style="display: none;" miltiple/>
@@ -222,6 +223,6 @@ tr:hover{background-color: #444;color: #fff;}
 </div>
 
 
+        <footer> Site is not used for commercial purpose. Image credit - Google images. </footer>
 		</body>
-
 		</html>
