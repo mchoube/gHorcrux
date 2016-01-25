@@ -17,4 +17,18 @@ go run *.go
 ```
 then open browser and type loclahost:9999 to use the web appliacation.
 
-
+### Extensible
+By just implementing following interface new storage provides can be added:
+```Go
+type horcrux interface {
+	Link(http.ResponseWriter, *http.Request)
+	Unlink()
+	HasToken() bool
+	SaveToken(*http.Request) error
+	RefreshToken()
+	List() []FileList
+	UploadFile(string, io.Reader) error
+	UploadFolder()
+	Delete()
+}
+```

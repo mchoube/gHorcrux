@@ -21,7 +21,6 @@ type horcrux interface {
 	RefreshToken()
 	List() []FileList
 	UploadFile(string, io.Reader) error
-	UploadFiles()
 	UploadFolder()
 	Delete()
 }

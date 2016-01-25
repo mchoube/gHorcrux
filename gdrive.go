@@ -224,9 +224,6 @@ func (gd *GDrive) UploadFile(fname string, r io.Reader) error {
 	return nil
 }
 
-func (gd *GDrive) UploadFiles() {
-}
-
 func (gd *GDrive) UploadFolder() {
 }
 
