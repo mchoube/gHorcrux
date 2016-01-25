@@ -32,3 +32,10 @@ type horcrux interface {
 	Delete()
 }
 ```
+
+### Roadmap
+- Polish the interface and implementation.
+- Intelligently decide which cloud storage provider to upload to.
+- Provide way to tag important file(s) which will be replicated to various cloud storage providers.
+- Add Amazon S3 support.
+- Add mobile app.
