@@ -1,6 +1,6 @@
 # gHorcrux
 
-Single pane to your personal cloud storage. User can manage personal cloud storage like Google Drive, Dropbox and Flickr using a single web UI. Web UI supports drag and drop capabilities.
+Single pane to your personal cloud storage. User can manage various personal cloud storage providers like Google Drive, Dropbox and Flickr using a single web UI. Web UI supports drag and drop capabilities.
 
 Developed by [Mehul Choube](https://github.com/mchoube) during the 2016 Gophergala global hackathon.
 
